@@ -1,0 +1,42 @@
+Select*
+FROM fortune_companies;
+
+Create column labeling company size
+
+Select company_name, employees,
+CASE WHEN employees >= 1000000 THEN 'Major Conglomerate'
+	WHEN employees >= 100000 THEN 'Large Company'
+    WHEN employees >= 10000 THEN 'Mid-Size Company'
+    ELSE 'small company'
+    END AS company_size
+FROM fortune_companies;
+
+# Which industries have an average revenue of at least $200 Billion, and what are their avg revenues?
+
+SELECT industry, ROUND(AVG(revenue),1) as avg_revenue_billions
+FROM fortune_companies
+GROUP BY industry
+HAVING avg_revenue_billions>=200
+
+
+##Companies with maternity leave above <10 weeks old.
+
+Select company_name, maternity_leave_weeks
+From fortune_companies
+GROUP BY company_name
+HAVING maternity_leave_weeks >=10 ORDER BY maternity_leave_weeks DESC;
+
+
+##Which companies hsvr over 200 billion in revenue and are in either in tech or healthcare industries?
+
+Select company_name, industry
+FROM fortune_companies 
+WHERE industry= 'Healthcare' OR industry='Technology'
+AND revenue >= 200;
+
+
+##Whats the average revenue for companies in the tech industry?
+
+Select AVG(revenue) 
+FROM fortune_companies
+WHERE industry='Technology';
