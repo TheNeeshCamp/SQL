@@ -1,7 +1,49 @@
+--Let's anazlyze Fortune 500 companies company data!
+
 Select*
+From fortune_companies;
+
+-- How many companies are in the dataset
+Select Count(*)
 FROM fortune_companies;
 
-Create column labeling company size
+--Top 5 Companies with longest employee tenure
+
+SELECT company_name, industry, avg_employee_tenure 
+FROM fortune_companies
+ORDER BY avg_employee_tenure DESC
+LIMIT 5;
+
+--Total revenue by industry
+
+SELECT industry, SUM(revenue) AS total_revenue
+FROM fortune_companies
+GROUP BY industry
+ORDER BY total_revenue DESC;
+
+-- Grouping industry, revenue, and tenure to see if there is any correlation to employee tenure and revenue group. 
+
+SELECT 
+    CASE 
+        WHEN revenue < 150 THEN 'Low Revenue (<$150M)'
+        WHEN revenue BETWEEN 150 AND 300 THEN 'Mid Revenue ($150M-$300M)'
+        WHEN revenue BETWEEN 300 AND 500 THEN 'High Revenue ($300M-$500M)'
+        ELSE 'Very High Revenue (>$500M)'
+    END AS revenue_group,
+    industry,
+    SUM(revenue) AS total_revenue,
+    AVG(avg_employee_tenure) AS avg_tenure
+FROM fortune_companies
+GROUP BY revenue_group, industry
+ORDER BY total_revenue DESC;
+
+--Compare revenue and employees to find revenue per employee
+
+Select company_name, revenue, employees, (revenue/employees) as revenue_per_employee
+From fortune_companies
+Order by revenue_per_employee desc;
+
+--Create column labeling company size
 
 Select company_name, employees,
 CASE WHEN employees >= 1000000 THEN 'Major Conglomerate'
@@ -11,7 +53,7 @@ CASE WHEN employees >= 1000000 THEN 'Major Conglomerate'
     END AS company_size
 FROM fortune_companies;
 
-# Which industries have an average revenue of at least $200 Billion, and what are their avg revenues?
+--Which industries have an average revenue of at least $200 Billion, and what are their avg revenues?
 
 SELECT industry, ROUND(AVG(revenue),1) as avg_revenue_billions
 FROM fortune_companies
@@ -19,7 +61,7 @@ GROUP BY industry
 HAVING avg_revenue_billions>=200
 
 
-##Companies with maternity leave above <10 weeks old.
+--Companies with maternity leave above <10 weeks old.
 
 Select company_name, maternity_leave_weeks
 From fortune_companies
