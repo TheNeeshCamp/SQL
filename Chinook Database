@@ -1,0 +1,131 @@
+--Basic Queries
+
+--1.Retreive all customers
+Select * FROM customers;
+
+--2. List all tracks with their album names
+Select * FROM albums Limit 5;
+
+Select * From tracks limit 5;
+
+Select tracks.name as TrackName, albums.Title as AlbumName
+FROM tracks
+INNER JOIN albums ON tracks.AlbumId = albums.AlbumId;
+
+--3.Find all invoices for a specific cusutomer (e.g., CustomerID=5_/-
+Select InvoiceId
+FROM invoices
+WHERE CustomerId = 5;
+
+--Aggregation & Grouping
+
+--1.Find the total number of invoices per customer
+
+Select CustomerId, Count(*) As TotalInvoices
+From Invoices
+Group by CustomerId;
+
+--2.Find the total sales amount per customer
+Select CustomerId, 
+SUM(Total) as TotalSpent
+From invoices
+Group by CustomerId
+Order by TotalSpent desc;
+
+--Filtering & Sorting
+--Top 5 most expensive tracks
+
+select * from tracks;
+
+Select name, unitprice
+from tracks
+order by unitprice desc limit 5;
+
+--Find all tracks that belong to the 'Rock' genre
+
+Select tracks.Name
+from tracks
+INNER JOIN genres
+ON tracks.GenreId = genres.GenreId
+WHERE genres.Name = 'Rock';
+
+--Joins & Relationships
+-- List all employees who report to a manager (CTE)
+
+Select * from employees; 
+
+SELECT e1.FirstName || ' ' || e1.LastName AS EmployeeName, 
+       e2.FirstName || ' ' || e2.LastName AS ManagerName
+FROM employees e1
+JOIN employees e2 ON e1.ReportsTo = e2.EmployeeId
+Order by ManagerName asc;
+
+--List all tracks along with their genre and media type
+
+Select tracks.Name, media_types.Name,
+genres.Name as Genre
+FROM tracks
+
+JOIN genres
+ON tracks.GenreId = genres.GenreId
+
+JOIN media_types
+ON tracks.MediaTypeId = media_types.MediaTypeId
+
+Order by Genre asc; 
+
+--Subqueries & Advanced Queries
+--1. Find the albums that have the most tracks
+
+--albums table: albumid, title
+--tracks: trackid (count), album id(join)
+
+Select albums.Title, COUNT (tracks.TrackId) as TotalTracks
+FROM albums
+
+JOIN tracks
+ON albums.AlbumId = tracks.AlbumId
+
+Group by albums.Title
+order by TotalTracks desc Limit 1; 
+
+--
+--Find the customer who has spent the most money
+--customers table. 
+select c.FirstName, 
+c.LastName, SUM(i.Total) as AmountSpent
+FROM customers c
+
+JOIN invoices i
+ON c.CustomerId = i.CustomerId
+
+GROUP BY c.CustomerId
+ORDER BY AmountSpent desc limit 1; 
+
+-- Find employees who manage the most people 
+With ManagerReportCount as (
+    Select ReportsTo as ManagerId, Count(EmployeeId) as DirectReports
+    From employees
+    WHERE ReportsTo IS NOT NULL
+    GROUP BY ReportsTo
+    )
+Select e.FirstName || ' ' || e.LastName as ManagerName, 
+ m.DirectReports
+ FROM ManagerReportCount m
+ 
+JOIN employees e ON m.ManagerId = e.EmployeeId
+ORDER BY m.DirectReports desc Limit 3; 
+
+-- Find the Best-Selling Albums
+With AlbumSales as (
+    Select tracks.AlbumId, Sum(ii.UnitPrice * ii.Quantity) as TotalRevenue
+    FROM invoice_items ii
+    Join tracks
+    on tracks.TrackId = ii.TrackId
+    Group BY tracks.AlbumId
+    )
+    
+Select a.Title AS AlbumName, s.TotalRevenue
+FROM AlbumSales s
+Join albums a ON s.AlbumId = a.AlbumId
+Order by s.TotalRevenue DESC LIMIT 5;  
